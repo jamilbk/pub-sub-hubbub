@@ -90,13 +90,18 @@ class PubSubsController < ApplicationController
       if timeout = params['hub.lease_seconds']
         # Hub will generally ask us if we want to refresh the subscription
         # before this expiry time occurs
-        @pub_sub.expires_at = Time.at(timeout + Time.now.to_i).to_datetime
+        @pub_sub.expires_at = Time.at(timeout.to_i + Time.now.to_i).to_datetime
       end
       # ensure this is the topic we requested before subscribing
       if @pub_sub.topic == params['hub.topic'] and
          @pub_sub.verify_token == params['hub.verify_token']
+        @pub_sub.status = 'subscribed'
+        @pub_sub.save
         respond_to { |format| format.html { render text: challenge } }
       else
+        @pub_sub.status = 'unsubscribed'
+        @pub_sub.save
+        
         logger.debug "UH OH: hub responded with different topic than we requested"
         logger.debug @pub_sub.inspect
         logger.debug params
@@ -105,12 +110,10 @@ class PubSubsController < ApplicationController
   end
   
   def subscribe
-    @pub_sub = PubSub.find(params[:id])
-    logger.debug "Status: #{@pub_sub.status}"
-    
+    @pub_sub = PubSub.find(params[:id])    
     
     respond_to do |format|
-      if @pub_sub.subscribe and @pub_sub.save
+      if @pub_sub.subscribe
         format.html { redirect_to pub_subs_url, notice: "PubSub #{@pub_sub.blog_url} successfully subscribed" }
       else
         format.html { render action: 'edit' }
@@ -122,7 +125,7 @@ class PubSubsController < ApplicationController
     @pub_sub = PubSub.find(params[:id])
     
     respond_to do |format|
-      if @pub_sub.unsubscribe and @pub_sub.save
+      if @pub_sub.unsubscribe
         format.html { redirect_to pub_subs_url, notice: "PubSub #{@pub_sub.blog_url} successfully unsubscribed" }
       else
         format.html { render action: 'edit' }

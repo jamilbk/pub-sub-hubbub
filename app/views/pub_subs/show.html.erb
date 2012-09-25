@@ -1,10 +1,29 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <b>Feed url:</b>
+  <b>Blog url:</b>
   <%= @pub_sub.blog_url %>
 </p>
 
+<p>
+  <b>Status:</b>
+  <%= @pub_sub.status %>
+<p>
+  
+<p>
+  <b>Topic:</b>
+  <%= @pub_sub.topic %>
+<p>
+  
+<p>
+  <b>Verify token:</b>
+  <%= @pub_sub.verify_token %>
+<p>
+
+<p>
+  <b>Expires at:</b>
+  <%= @pub_sub.expires_at %>
+<p>
 
 <%= link_to 'Edit', edit_pub_sub_path(@pub_sub) %> |
 <%= link_to 'Back', pub_subs_path %>

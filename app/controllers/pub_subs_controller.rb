@@ -96,7 +96,11 @@ class PubSubsController < ApplicationController
         # ensure this is the topic we requested before subscribing
         if @pub_sub.topic == params['hub.topic'] and
            @pub_sub.verify_token == params['hub.verify_token']
-          @pub_sub.status = params['hub.mode']
+          if params['hub.mode'] == 'subscribe'
+            @pub_sub.status = 'subscribed'
+          elsif params['hub.mode'] == 'unsubscribe'
+            @pub_sub.status = 'unsubscribed'
+          end
           @pub_sub.save
           respond_to { |format| format.html { render text: challenge } }
         else

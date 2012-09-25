@@ -22,6 +22,8 @@ class PubSub < ActiveRecord::Base
     if hub = hub_url(feed_url(url))
       self.topic = feed_url(url)
       self.verify_token = (0...8).map{65.+(rand(25)).chr}.join # random 8-char string
+      self.status = "subscription pending"
+      self.save
       params = {
         'hub.topic'         => self.topic,
         'hub.mode'          => 'subscribe',
@@ -35,9 +37,6 @@ class PubSub < ActiveRecord::Base
         self.errors.add(:blog_url, "seems invalid. Fix it and try resubscribing. #{e.class} #{e.message}")
         return false
       end
-      
-      self.status = "subscription pending"
-      self.save
     else
       return false
     end

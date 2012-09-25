@@ -110,6 +110,9 @@ class PubSubsController < ApplicationController
             }
           }
         end
+      else
+        respond_to {|format| format.html { render text: "No challenge provided.", status: 404 }}
+      end
       
     # POST: hub is notifying us of a new subscription
     elsif request.method == "POST"

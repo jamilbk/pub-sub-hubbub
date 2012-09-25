@@ -1,0 +1,16 @@
+<%= form_for(@pub_sub) do |f| %>
+  <%= render 'errors' %>
+
+  <div class="field">
+    <%= f.label :blog_url %><br />
+    <%= f.text_field :blog_url %>
+  </div>
+  <div class="field">
+    <%= f.label :status %><br />
+    <p><%= @pub_sub.status %></p>
+    <%= f.hidden_field :status %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

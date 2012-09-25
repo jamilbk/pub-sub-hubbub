@@ -1,0 +1,32 @@
+<h1>Listing pub_subs</h1>
+
+<p id="notice"><%= notice %></p>
+
+<table>
+  <tr>
+    <th>Feed url</th>
+    <th>Status</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @pub_subs.each do |pub_sub| %>
+  <tr>
+    <td><%= pub_sub.blog_url %></td>
+    <td><%= pub_sub.status %></td>
+    <td><%= link_to 'Show', pub_sub %></td>
+    <% if pub_sub.status == 'subscribed' %>
+      <td><%= link_to 'Unsubscribe', unsubscribe_path(pub_sub) %></td>
+    <% else %>
+      <td><%= link_to 'Subscribe', subscribe_path(pub_sub) %></td>
+    <% end %>
+    <td><%= link_to 'Edit', edit_pub_sub_path(pub_sub) %></td>
+    <td><%= link_to 'Destroy', pub_sub, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Pub sub', new_pub_sub_path %>

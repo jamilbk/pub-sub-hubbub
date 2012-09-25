@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+tumblr:
+  blog_url: http://eidosmontreal.tumblr.com/
+  status: nil
+  
+wordpress:
+  blog_url: http://techcrunch.wordpress.com/
+  status: nil
+  
+blogspot:
+  blog_url: http://blogsofnote.blogspot.com/
+  status: nil

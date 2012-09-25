@@ -85,7 +85,7 @@ class PubSubsController < ApplicationController
   def callback
     @pub_sub = PubSub.find(params[:id])
     
-    # GET: hub is trying to verify a new subscription
+    # GET: hub is trying to verify a new request
     if request.method == "GET"
       if challenge = params['hub.challenge']
         if timeout = params['hub.lease_seconds']
@@ -96,7 +96,7 @@ class PubSubsController < ApplicationController
         # ensure this is the topic we requested before subscribing
         if @pub_sub.topic == params['hub.topic'] and
            @pub_sub.verify_token == params['hub.verify_token']
-          @pub_sub.status = 'subscribed'
+          @pub_sub.status = params['hub.mode']
           @pub_sub.save
           respond_to { |format| format.html { render text: challenge } }
         else
@@ -130,7 +130,7 @@ class PubSubsController < ApplicationController
     
     respond_to do |format|
       if @pub_sub.subscribe
-        format.html { redirect_to pub_subs_url, notice: "PubSub #{@pub_sub.blog_url} successfully subscribed" }
+        format.html { redirect_to pub_subs_url, notice: "Subscription successfully initiated for PubSub #{@pub_sub.blog_url}" }
       else
         format.html { render action: 'edit' }
       end
@@ -142,8 +142,7 @@ class PubSubsController < ApplicationController
     
     respond_to do |format|
       if @pub_sub.unsubscribe
-        format.html { redirect_to pub_subs_url, notice: "PubSub #{@pub_sub.blog_url} successfully unsubscribed" }
-      else
+        format.html { redirect_to pub_subs_url, notice: "Unsubscription successfully initiated for PubSub #{@pub_sub.blog_url}" }
         format.html { render action: 'edit' }
       end
     end

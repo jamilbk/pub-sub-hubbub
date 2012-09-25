@@ -20,7 +20,7 @@ class PubSub < ActiveRecord::Base
   
   def subscribe(url = self.blog_url)
     if f = feed_url(url) and hub = hub_url(f)
-      self.topic = feed_url(url)
+      self.topic = f
       self.verify_token = (0...8).map{65.+(rand(25)).chr}.join # random 8-char string
       self.status = "subscription pending"
       self.save
@@ -34,7 +34,7 @@ class PubSub < ActiveRecord::Base
       begin
         RestClient.post hub, params
       rescue => e
-        logger.info e.response
+        logger.error e.response
         if e.response.code == 202 # subscription request was received
           return true
         else
@@ -49,8 +49,29 @@ class PubSub < ActiveRecord::Base
   end
   
   def unsubscribe(url = self.blog_url)
-    if hub = hub_url(feed_url(url))
-      self.status = "unsubscribed"
+    if f = feed_url(url) and hub = hub_url(f)
+      self.topic = f
+      self.verify_token = (0...8).map{65.+(rand(25)).chr}.join # random 8-char string
+      self.status = "unsubscription pending"
+      self.save
+      params = {
+        'hub.topic'         => self.topic,
+        'hub.mode'          => 'unsubscribe',
+        'hub.callback'      => "http://thawing-thicket-1956.herokuapp.com/pub_subs/#{self.id}/callback",
+        'hub.verify'        => 'async',
+        'hub.verify_token'  => self.verify_token
+      }
+      begin
+        RestClient.post hub, params
+      rescue => e
+        logger.error e.response
+        if e.response.code == 202
+          return true
+        else
+          self.errors.add(:status, "unchanged. Couldn't unsubscribe. #{e}")
+          return false
+        end
+      end
     else
       return false
     end

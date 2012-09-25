@@ -71,7 +71,7 @@ class PubSub < ActiveRecord::Base
     blog = Nokogiri::HTML(open(url))
     
     # select 
-    if feed = blog.xpath("html/head/link[@rel='alternate']")
+    if (feed = blog.xpath("html/head/link[@rel='alternate']")).present?
       feed.attribute("href").text
     else
       nil
@@ -86,7 +86,7 @@ class PubSub < ActiveRecord::Base
     # xpath of //*[@rel='hub'] is used instead of //link[@rel='hub'] since 
     # the link element may be under different XML namespaces, e.g.
     # <atom:link> or <rss:link> etc
-    if hub = feed.xpath("//*[@rel='hub']")
+    if (hub = feed.xpath("//*[@rel='hub']")).present?
       hub.attribute("href").text
     else
       nil

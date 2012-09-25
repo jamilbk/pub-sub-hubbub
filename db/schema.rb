@@ -11,13 +11,16 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120925063039) do
+ActiveRecord::Schema.define(:version => 20120925203225) do
 
   create_table "pub_subs", :force => true do |t|
     t.string   "blog_url"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
     t.string   "status"
+    t.datetime "expires_at"
+    t.string   "verify_token"
+    t.string   "topic"
   end
 
 end

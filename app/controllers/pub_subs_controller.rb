@@ -81,8 +81,27 @@ class PubSubsController < ApplicationController
     end
   end
   
+  # Handles responses from Hub servers
   def callback
+    @pub_sub = PubSub.find(params[:id])
     
+    # hub is trying to verify a new subscription
+    if challenge = params['hub.challenge']
+      if timeout = params['hub.lease_seconds']
+        # Hub will generally ask us if we want to refresh the subscription
+        # before this expiry time occurs
+        @pub_sub.expires_at = Time.at(timeout + Time.now.to_i).to_datetime
+      end
+      # ensure this is the topic we requested before subscribing
+      if @pub_sub.topic == params['hub.topic'] and
+         @pub_sub.verify_token == params['hub.verify_token']
+        respond_to { |format| format.html { render text: challenge } }
+      else
+        logger.debug "UH OH: hub responded with different topic than we requested"
+        logger.debug @pub_sub.inspect
+        logger.debug params
+      end
+    end
   end
   
   def subscribe

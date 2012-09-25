@@ -99,7 +99,7 @@ class PubSubsController < ApplicationController
         @pub_sub.save
         respond_to { |format| format.html { render text: challenge } }
       else
-        @pub_sub.status = 'unsubscribed'
+        @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'
         @pub_sub.save
         
         logger.debug "UH OH: hub responded with different topic than we requested"

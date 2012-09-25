@@ -28,7 +28,12 @@ class PubSub < ActiveRecord::Base
         'hub.verify'        => 'sync',
         'hub.verify_token'  => self.verify_token
       }
-      RestClient.post hub, params
+      begin
+        RestClient.post hub, params
+      rescue StandardError => e
+        self.errors.add(:blog_url, "seems invalid. Fix it and try resubscribing. #{e.class} #{e.message}")
+        return false
+      end
       
       self.status = "subscription pending"
       self.save

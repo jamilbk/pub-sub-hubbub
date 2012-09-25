@@ -19,7 +19,7 @@ class PubSub < ActiveRecord::Base
   end
   
   def subscribe(url = self.blog_url)
-    if hub = hub_url(feed_url(url))
+    if f = feed_url(url) and hub = hub_url(f)
       self.topic = feed_url(url)
       self.verify_token = (0...8).map{65.+(rand(25)).chr}.join # random 8-char string
       self.status = "subscription pending"
@@ -42,6 +42,7 @@ class PubSub < ActiveRecord::Base
         end
       end
     else
+      self.errors.add(:blog_url, "doesn't seem to contain a valid RSS / Atom feed or its feed has no hub specified.")
       return false
     end
   end
@@ -70,8 +71,8 @@ class PubSub < ActiveRecord::Base
     blog = Nokogiri::HTML(open(url))
     
     # select 
-    if feed = blog.xpath("html/head/link[@rel='alternate']").attribute("href")
-      feed.text
+    if feed = blog.xpath("html/head/link[@rel='alternate']")
+      feed.attribute("href").text
     else
       nil
     end
@@ -85,8 +86,8 @@ class PubSub < ActiveRecord::Base
     # xpath of //*[@rel='hub'] is used instead of //link[@rel='hub'] since 
     # the link element may be under different XML namespaces, e.g.
     # <atom:link> or <rss:link> etc
-    if hub = feed.xpath("//*[@rel='hub']").attribute("href")
-      hub.text
+    if hub = feed.xpath("//*[@rel='hub']")
+      hub.attribute("href").text
     else
       nil
     end

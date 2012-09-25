@@ -34,7 +34,7 @@ class PubSub < ActiveRecord::Base
       begin
         RestClient.post hub, params
       rescue => e
-        logger.info e
+        logger.info e.response
         if e.response.code == 202 # subscription request was received
           return true
         else

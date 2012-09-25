@@ -2,7 +2,7 @@ require 'test_helper'
 
 class PubSubsControllerTest < ActionController::TestCase
   setup do
-    @pub_sub = pub_subs(:one)
+    @pub_sub = pub_subs(:tumblr)
   end
 
   test "should get index" do
@@ -45,5 +45,17 @@ class PubSubsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to pub_subs_path
+  end
+  
+  test "should respond to hub verification requests" do
+    get :callback, id: @pub_sub
+  end
+  
+  test "should respond to hub update notifications" do
+    post :callback, id: @pub_sub
+  end
+  
+  test "should initiate subscription request to feed" do
+    
   end
 end

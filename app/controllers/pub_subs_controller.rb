@@ -117,7 +117,7 @@ class PubSubsController < ApplicationController
     # POST: hub is notifying us of a new subscription
     elsif request.method == "POST"
       logger.info params
-      logger.info request.inspect
+      logger.info "Request body: #{request.body.read}"
       respond_to {|format| format.html{ render text: "OK" }}
     # Unsupported request from Hub or other server
     else

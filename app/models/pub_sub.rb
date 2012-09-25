@@ -34,10 +34,10 @@ class PubSub < ActiveRecord::Base
       begin
         RestClient.post hub, params
       rescue => e
-        if e.response.code == 204 # success in pubsub's book :-/
+        if e.response.code == 202 # subscription request was received
           return true
         else
-          self.errors.add(:blog_url, "seems invalid. Fix it and try resubscribing. #{e}")
+          self.errors.add(:blog_url, "seems invalid. Hub wouldn't take subscription request. #{e}")
           return false
         end
       end

@@ -101,11 +101,13 @@ class PubSubsController < ApplicationController
       else
         @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'
         @pub_sub.save
-        
-        logger.error "UH OH: hub responded with different topic than we requested"
-        logger.error @pub_sub.inspect
-        logger.error params
-        respond_to { |format| format.html { render text: "error: you responded with invalid hub topic and/or verify token" } }
+
+        respond_to { |format|
+          format.html {
+            render text: "error: you responded with invalid hub topic and/or 
+              verify token", status: 404
+          }
+        }
       end
     end
   end

@@ -33,9 +33,13 @@ class PubSub < ActiveRecord::Base
       }
       begin
         RestClient.post hub, params
-      rescue StandardError => e
-        self.errors.add(:blog_url, "seems invalid. Fix it and try resubscribing. #{e.class} #{e.message}")
-        return false
+      rescue => e
+        if e.response.code == 204 # success in pubsub's book :-/
+          return true
+        else
+          self.errors.add(:blog_url, "seems invalid. Fix it and try resubscribing. #{e}")
+          return false
+        end
       end
     else
       return false

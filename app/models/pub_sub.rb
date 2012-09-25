@@ -3,6 +3,7 @@ require 'open-uri'
 class PubSub < ActiveRecord::Base
   attr_accessible :blog_url, :status
   before_update :check_subscription
+  before_destroy :unsubscribe
   
   # if URI can't understand it it's not a valid URL
   validates_format_of :blog_url, with: URI::regexp(%w(http https))

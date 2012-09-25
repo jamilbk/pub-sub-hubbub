@@ -105,6 +105,7 @@ class PubSubsController < ApplicationController
         logger.debug "UH OH: hub responded with different topic than we requested"
         logger.debug @pub_sub.inspect
         logger.debug params
+        respond_to { |format| format.html { render text: "error: you responded with invalid hub topic and/or verify token" } }
       end
     end
   end

@@ -85,30 +85,40 @@ class PubSubsController < ApplicationController
   def callback
     @pub_sub = PubSub.find(params[:id])
     
-    # hub is trying to verify a new subscription
-    if challenge = params['hub.challenge']
-      if timeout = params['hub.lease_seconds']
-        # Hub will generally ask us if we want to refresh the subscription
-        # before this expiry time occurs
-        @pub_sub.expires_at = Time.at(timeout.to_i + Time.now.to_i).to_datetime
-      end
-      # ensure this is the topic we requested before subscribing
-      if @pub_sub.topic == params['hub.topic'] and
-         @pub_sub.verify_token == params['hub.verify_token']
-        @pub_sub.status = 'subscribed'
-        @pub_sub.save
-        respond_to { |format| format.html { render text: challenge } }
-      else
-        @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'
-        @pub_sub.save
+    # GET: hub is trying to verify a new subscription
+    if request.method == "GET"
+      if challenge = params['hub.challenge']
+        if timeout = params['hub.lease_seconds']
+          # Hub will generally ask us if we want to refresh the subscription
+          # before this expiry time occurs
+          @pub_sub.expires_at = Time.at(timeout.to_i + Time.now.to_i).to_datetime
+        end
+        # ensure this is the topic we requested before subscribing
+        if @pub_sub.topic == params['hub.topic'] and
+           @pub_sub.verify_token == params['hub.verify_token']
+          @pub_sub.status = 'subscribed'
+          @pub_sub.save
+          respond_to { |format| format.html { render text: challenge } }
+        else
+          @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'
+          @pub_sub.save
 
-        respond_to { |format|
-          format.html {
-            render text: "error: you responded with invalid hub topic and/or 
-              verify token", status: 404
+          respond_to { |format|
+            format.html {
+              render text: "error: you responded with invalid hub topic and/or 
+                verify token", status: 404
+            }
           }
-        }
-      end
+        end
+      
+    # POST: hub is notifying us of a new subscription
+    elsif request.method == "POST"
+      logger.info params
+      logger.info request.inspect
+      respond_to {|format| format.html{ render text: "OK" }}
+    # Unsupported request from Hub or other server
+    else
+      respond_to {|format| format.html{ render text: "Unsupported Request", status: 405 }}
     end
   end
   

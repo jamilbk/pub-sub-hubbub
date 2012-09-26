@@ -85,48 +85,51 @@ class PubSubsController < ApplicationController
   def callback
     @pub_sub = PubSub.find(params[:id])
     
-    # GET: hub is trying to verify a new request
-    if request.method == "GET"
-      if challenge = params['hub.challenge']
-        if timeout = params['hub.lease_seconds']
-          # Hub will generally ask us if we want to refresh the subscription
-          # before this expiry time occurs
-          @pub_sub.expires_at = Time.at(timeout.to_i + Time.now.to_i).to_datetime
-        end
-        # ensure this is the topic we requested before subscribing
-        if @pub_sub.topic == params['hub.topic'] and
-           @pub_sub.verify_token == params['hub.verify_token']
-          if params['hub.mode'] == 'subscribe'
-            @pub_sub.status = 'subscribed'
-          elsif params['hub.mode'] == 'unsubscribe'
-            @pub_sub.status = 'unsubscribed'
-          end
-          @pub_sub.save
-          respond_to { |format| format.html { render text: challenge } }
-        else
-          @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'
-          @pub_sub.save
-
-          respond_to { |format|
-            format.html {
-              render text: "error: you responded with invalid hub topic and/or 
-                verify token", status: 404
-            }
-          }
-        end
-      else
-        respond_to {|format| format.html { render text: "No challenge provided.", status: 404 }}
+    case request.method
+    when "GET" then verify_hub # hub is trying to verify a new request
+    when "POST" then update_pub_sub # hub is updating us with a new post
+    else # WTF hub
+      respond_to {|format| format.html{ render text: "Unsupported Request", status: 405 }}
+    end
+  end
+  
+  def update_pub_sub
+    @pub_sub.document = request.body.read
+    @pub_sub.save
+    respond_to {|format| format.html{ render text: "OK" }}
+  end
+  
+  def verify_hub
+    if (challenge = params['hub.challenge']).blank?
+      respond_to {|format| format.html {
+        render text: "No challenge provided.", status: 404
+      }}
+    else
+      if timeout = params['hub.lease_seconds']
+        @pub_sub.expires_at = Time.at(timeout.to_i + Time.now.to_i).to_datetime
       end
       
-    # POST: hub is notifying us of a new subscription
-    elsif request.method == "POST"
-      @pub_sub.document = request.body.read
-      @pub_sub.save
-      respond_to {|format| format.html{ render text: "OK" }}
-      
-    # Unsupported request from Hub or other server
-    else
-      respond_to {|format| format.html{ render text: "Unsupported Request", status: 405 }}
+      # ensure this is the topic we requested before subscribing
+      if @pub_sub.topic == params['hub.topic'] and
+         @pub_sub.verify_token == params['hub.verify_token']
+        if params['hub.mode'] == 'subscribe'
+          @pub_sub.status = 'subscribed'
+        elsif params['hub.mode'] == 'unsubscribe'
+          @pub_sub.status = 'unsubscribed'
+        end
+        @pub_sub.save
+        respond_to { |format| format.html { render text: challenge } }
+      else
+        @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'
+        @pub_sub.save
+
+        respond_to { |format|
+          format.html {
+            render text: "error: you responded with invalid hub topic and/or 
+              verify token", status: 404
+          }
+        }
+      end
     end
   end
   

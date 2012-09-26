@@ -121,6 +121,7 @@ class PubSubsController < ApplicationController
     # POST: hub is notifying us of a new subscription
     elsif request.method == "POST"
       @pub_sub.document = request.body.read
+      @pub_sub.save
       respond_to {|format| format.html{ render text: "OK" }}
       
     # Unsupported request from Hub or other server

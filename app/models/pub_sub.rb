@@ -77,7 +77,9 @@ class PubSub < ActiveRecord::Base
       begin
         RestClient.post hub, params
       rescue => e
-        # anything other than 200 response raises an Error
+        logger.info "RESPONSE: #{e.response}"
+
+        # anything other than 202 response raises an Error
         if e.response.code.to_i == 202 # subscription request was received
           return true
         else

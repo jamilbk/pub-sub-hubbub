@@ -96,26 +96,28 @@ class PubSubsController < ApplicationController
   def update_pub_sub
     @pub_sub.document = request.body.read
     @pub_sub.save
-    respond_to {|format| format.html{ render text: "OK" }}
+    respond_to {|format| format.html { render text: "OK", status: 200 }}
   end
   
   def verify_hub
-    if (challenge = params['hub.challenge']).blank?
-      respond_to {|format| format.html {
-        render text: "No challenge provided.", status: 404
-      }}
-    else
-      if timeout = params['hub.lease_seconds']
-        @pub_sub.expires_at = Time.at(timeout.to_i + Time.now.to_i).to_datetime
+    challenge = params['hub.challenge']
+    timeout   = params['hub.lease_seconds']
+    mode      = params['hub.mode']
+    topic     = params['hub.topic']
+    token     = params['hub.verify_token']
+    
+    if challenge.present?
+      if timeout.present?
+        @pub_sub.expires_at = Time.at(timeout.to_i+Time.now.to_i).to_datetime
       end
       
       # ensure this is the topic we requested before subscribing
-      if @pub_sub.topic == params['hub.topic'] and
-         @pub_sub.verify_token == params['hub.verify_token']
-        if params['hub.mode'] == 'subscribe'
-          @pub_sub.status = 'subscribed'
-        elsif params['hub.mode'] == 'unsubscribe'
-          @pub_sub.status = 'unsubscribed'
+      if @pub_sub.topic == topic and @pub_sub.verify_token == token
+        case mode
+        when 'subscribe', 'unsubscribe'
+         @pub_sub.status = "#{mode}d"
+        else
+         @pub_sub.status = "Hub responded with unknown hub.mode: #{params['hub.mode']}"
         end
         @pub_sub.save
         respond_to { |format| format.html { render text: challenge } }
@@ -130,11 +132,15 @@ class PubSubsController < ApplicationController
           }
         }
       end
+    else
+      respond_to {|format| format.html {
+        render text: "No challenge provided.", status: 404
+      }}
     end
   end
   
   def subscribe
-    @pub_sub = PubSub.find(params[:id])    
+    @pub_sub = PubSub.find(params[:id])
     
     respond_to do |format|
       if @pub_sub.subscribe

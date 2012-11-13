@@ -24,73 +24,12 @@ class PubSub < ActiveRecord::Base
   end
   
   def subscribe(url = self.blog_url)
-    if f = feed_url(url) and hub = hub_url(f)
-      self.topic = f
-      self.verify_token = (0...8).map{65.+(rand(25)).chr}.join # random 8-char string
-      self.status = "subscription pending"
-      self.save
-      params = {
-        'hub.topic'         => self.topic,
-        'hub.mode'          => 'subscribe',
-        'hub.callback'      => "http://thawing-thicket-1956.herokuapp.com/pub_subs/#{self.id}/callback",
-        'hub.verify'        => 'async',
-        'hub.verify_token'  => self.verify_token
-      }
-      begin
-        RestClient.post hub, params
-      rescue => e
-        logger.error e.response
-        if e.response.code == 202 # subscription request was received
-          return true
-        else
-          self.errors.add(:blog_url, "seems invalid. Hub wouldn't take subscription request. #{e}")
-          return false
-        end
-      end
-    else
-      self.errors.add(:blog_url, "doesn't seem to contain a valid RSS / Atom feed or its feed has no hub specified.")
-      return false
-    end
+    perform_request('subscribe', url)
   end
   
   def unsubscribe(url = self.blog_url)
-    if f = feed_url(url) and hub = hub_url(f)
-      self.topic = f
-      self.verify_token = (0...8).map{65.+(rand(25)).chr}.join # random 8-char string
-      self.status = "unsubscription pending"
-      self.save
-      params = {
-        'hub.topic'         => self.topic,
-        'hub.mode'          => 'unsubscribe',
-        'hub.callback'      => "http://thawing-thicket-1956.herokuapp.com/pub_subs/#{self.id}/callback",
-        'hub.verify'        => 'async',
-        'hub.verify_token'  => self.verify_token
-      }
-      begin
-        RestClient.post hub, params
-      rescue => e
-        logger.error e.response
-        if e.response.code == 202
-          return true
-        else
-          self.errors.add(:status, "unchanged. Couldn't unsubscribe. #{e}")
-          return false
-        end
-      end
-    else
-      return false
-    end
+    perform_request('unsubscribe', url)
   end
-    
-    # 1. Fetch the Blog url
-    # 2. Look for blog's rss / atom feed
-    # 3. set this as hub.topic
-    # 4. Fetch blog feed URL
-    # 5. Look for rel="hub"
-    # 6. Post hub data (subscribe) to this URL, synchronously
-    # 7. Listen for verification response
-    # 8. Echo back challenge
-    # 9. Ensure success
   
   # Fetches a blog's feed URL from a standard HTTP URL. A blog's feed is
   # usually indicated by a <link rel="alternate"> inside <head>
@@ -118,6 +57,42 @@ class PubSub < ActiveRecord::Base
     else
       nil
     end
+  end
+
+  private
+  
+  def perform_request(request_type, url)
+    if f = feed_url(url) and hub = hub_url(f)
+      self.topic        = f
+      self.verify_token = random_8char_string
+      self.status       = "#{request_type} pending"
+      self.save
+      params = {
+        'hub.topic'         => self.topic,
+        'hub.mode'          => request_type,
+        'hub.callback'      => "http://thawing-thicket-1956.herokuapp.com/pub_subs/#{self.id}/callback",
+        'hub.verify'        => 'async',
+        'hub.verify_token'  => self.verify_token
+      }
+      begin
+        RestClient.post hub, params
+      rescue => e
+        # anything other than 200 response raises an Error
+        if e.response.code.to_i == 202 # subscription request was received
+          return true
+        else
+          self.errors.add(:blog_url, "seems invalid. Hub wouldn't take #{request_type} request. #{e.response.inspect}")
+          return false
+        end
+      end
+    else
+      self.errors.add(:blog_url, "doesn't seem to contain a valid RSS / Atom feed or its feed has no hub specified.")
+      return false
+    end
+  end
+  
+  def random_8char_string
+    (0...8).map{65.+(rand(25)).chr}.join
   end
 end
 

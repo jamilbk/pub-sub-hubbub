@@ -2,9 +2,9 @@ PSHB::Application.routes.draw do
   resources :pub_subs
 
   root to: 'pub_subs#index'
-  match 'pub_subs/:id/subscribe' => 'pub_subs#subscribe', :as => :subscribe
-  match 'pub_subs/:id/unsubscribe' => 'pub_subs#unsubscribe', :as => :unsubscribe
-  match 'pub_subs/:id/callback' => 'pub_subs#callback', :as => :callback
+  match 'pub_subs/:id/subscribe' => 'pub_subs#subscribe', :as => :pubsub_subscribe
+  match 'pub_subs/:id/unsubscribe' => 'pub_subs#unsubscribe', :as => :pubsub_unsubscribe
+  match 'pub_subs/:id/callback' => 'pub_subs#callback', :as => :pubsub_callback
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

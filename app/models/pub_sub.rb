@@ -71,7 +71,7 @@ class PubSub < ActiveRecord::Base
         'hub.topic'         => self.topic,
         'hub.mode'          => request_type,
         'hub.callback'      => "http://pub-sub-hubbub.herokuapp.com/pub_subs/#{self.id}/callback",
-        'hub.verify'        => 'sync',
+        'hub.verify'        => 'async',
         'hub.verify_token'  => self.verify_token
       }
       begin

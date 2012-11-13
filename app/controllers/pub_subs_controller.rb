@@ -120,6 +120,7 @@ class PubSubsController < ApplicationController
          @pub_sub.status = "Hub responded with unknown hub.mode: #{params['hub.mode']}"
         end
         logger.info "SAVING PUB SUB... #{@pub_sub.save}"
+        logger.info "RESPONDING WITH CHALLENGE: #{challenge}"
         respond_to { |format| format.html { render text: challenge } }
       else
         @pub_sub.status = 'subscription failed: hub returned bad topic and/or verify_token'

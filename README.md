@@ -9,3 +9,5 @@ Basic gist of subscribing to a PubSubHubbub goes like this:
 7. Listen for verification response
 8. Echo back challenge
 9. Ensure success
+
+Read more about the PubSubHubbub protocol here: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html

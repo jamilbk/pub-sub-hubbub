@@ -70,7 +70,7 @@ class PubSub < ActiveRecord::Base
       params = {
         'hub.topic'         => self.topic,
         'hub.mode'          => request_type,
-        'hub.callback'      => "http://thawing-thicket-1956.herokuapp.com/pub_subs/#{self.id}/callback",
+        'hub.callback'      => "http://pub-sub-hubbub.herokuapp.com/pub_subs/#{self.id}/callback",
         'hub.verify'        => 'async',
         'hub.verify_token'  => self.verify_token
       }

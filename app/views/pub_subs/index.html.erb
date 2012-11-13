@@ -17,8 +17,8 @@
     <td><%= pub_sub.blog_url %></td>
     <td><%= pub_sub.status %></td>
     <td><%= link_to 'Show', pub_sub %></td>
-    <td><%= link_to 'Unsubscribe', unsubscribe_path(pub_sub) %></td>
-    <td><%= link_to 'Subscribe', subscribe_path(pub_sub) %></td>
+    <td><%= link_to 'Unsubscribe', pubsub_unsubscribe_path(pub_sub) %></td>
+    <td><%= link_to 'Subscribe', pubsub_subscribe_path(pub_sub) %></td>
     <td><%= link_to 'Edit', edit_pub_sub_path(pub_sub) %></td>
     <td><%= link_to 'Destroy', pub_sub, method: :delete, data: { confirm: 'Are you sure?' } %></td>
   </tr>

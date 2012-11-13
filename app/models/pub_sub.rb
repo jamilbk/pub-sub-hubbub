@@ -75,7 +75,7 @@ class PubSub < ActiveRecord::Base
         'hub.verify_token'  => self.verify_token
       }
       begin
-        RestClient.post hub, params
+        RestClient.post hub, params, content_type: 'application/x-www-form-urlencoded'
         return true
       rescue => e
 

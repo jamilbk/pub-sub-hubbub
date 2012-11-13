@@ -1,3 +1,5 @@
+Demo: http://pub-sub-hubbub.herokuapp.com
+
 Basic gist of subscribing to a PubSubHubbub goes like this:
 
 1. Fetch the Blog url
